@@ -4,4 +4,4 @@ Esta librería para java se usa par aconsumir los servicios REST de Alfresco
 
 ## Uso
 
-Desde Java
+Desde Java API
