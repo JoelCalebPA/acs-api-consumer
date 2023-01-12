@@ -57,7 +57,6 @@ public class AlfrescoService
     private String USER;
     private String PASSWORD;
     static HttpMethodRetryHandler myretryhandler;
-    private static final String WORKSPACE = "workspace://SpacesStore/";
 
     /**
      * Metodo que setear los parametros de conexion a Alfresco
