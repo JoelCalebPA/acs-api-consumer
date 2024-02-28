@@ -121,14 +121,13 @@ public class AlfrescoService
     {
         Part[] parts;
         int i = 3;
+        
         if (file != null)
-        {
             i++;
-        }
+        
         if (!nodeCreate.getProperties().isEmpty())
-        {
             i += nodeCreate.getProperties().size();
-        }
+        
         parts = new Part[i];
         parts[0] = new StringPart("name", nodeCreate.getName(), UTF8);
         parts[1] = new StringPart("nodeType", nodeCreate.getNodeType(), UTF8);
@@ -149,13 +148,10 @@ public class AlfrescoService
         }
         String nodeCreated;
         if (file != null)
-        {
             nodeCreated = callPostApi("/api/-default-/public/alfresco/versions/1/nodes/" + containerId + "/children", null, parts);
-        } 
         else
-        {
             nodeCreated = callPostApi("/api/-default-/public/alfresco/versions/1/nodes/" + containerId + "/children", new Gson().toJson(nodeCreate), null);
-        }
+        
         JsonElement jsonElement = JsonParser.parseString(nodeCreated).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
         return new Gson().fromJson(entry, NodeEntry.class);
@@ -173,18 +169,42 @@ public class AlfrescoService
     {
         String node = "";
         if (relativePath.isEmpty())
-            node = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId);
+            node = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "?include=path");
         else
-            node = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "?relativePath=" + encodeValue(relativePath));
+            node = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "?include=path&relativePath=" + encodeValue(relativePath));
         JsonElement jsonElement = JsonParser.parseString(node).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
         return new Gson().fromJson(entry, NodeEntry.class);
     }
+    
+    public List<NodeEntry> getNodeChildren(String nodeId, String relativePath) throws AlfrescoException, UnsupportedEncodingException
+    {
+        List<NodeEntry> nodes = new ArrayList<>();
+        String nodesRaw = "";
+        if (relativePath.isEmpty())
+            nodesRaw = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/children?skipCount=0&maxItems=10000&include=path");
+        else
+            nodesRaw = callGetApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/children?skipCount=0&maxItems=10000&include=path&relativePath=" + encodeValue(relativePath));
+        JsonElement jsonElement = JsonParser.parseString(nodesRaw).getAsJsonObject();
+        JsonObject list = jsonElement.getAsJsonObject().getAsJsonObject("list");
+        JsonArray entries = list.getAsJsonArray("entries");
+        for (JsonElement entry : entries)
+        {
+            JsonObject nodeObject = entry.getAsJsonObject().getAsJsonObject("entry");
+            nodes.add(new Gson().fromJson(nodeObject, NodeEntry.class));
+        }
+        return nodes;
+    }
 
+    public int deleteNode(String nodeId) throws AlfrescoException
+    {
+        return callDeleteApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "?permanent=false");
+    }
+    
     public NodeEntry moveNode(String nodeId, String parentId) throws AlfrescoException
     {
         NodeMoveRequest toMove = new NodeMoveRequest(parentId);
-        String nodeMoved = callPostApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/move", new Gson().toJson(toMove), null);
+        String nodeMoved = callPostApi("/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/move?include=path", new Gson().toJson(toMove), null);
         JsonElement jsonElement = JsonParser.parseString(nodeMoved).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
         return new Gson().fromJson(entry, NodeEntry.class);

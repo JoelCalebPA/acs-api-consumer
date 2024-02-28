@@ -19,6 +19,7 @@ public class NodeEntry {
     private String name;
     private String id;
     private Map<String, Object> properties;
+    private Path path;
 
     public NodeEntry() {
         super();
@@ -127,6 +128,18 @@ public class NodeEntry {
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
+    
+    public long getSizeInBytes() {
+        return this.content.getSizeInBytes();
+    }
+    
+    public String getPath() {
+        return path.getName();
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
+    }
 
     @Override
     public String toString() {
@@ -141,7 +154,7 @@ public class NodeEntry {
 class Content {
     private String mimeType;
     private String mimeTypeName;
-    private int sizeInBytes;
+    private long sizeInBytes;
     private String encoding;
 
     public Content() {
@@ -164,11 +177,11 @@ class Content {
         this.mimeTypeName = mimeTypeName;
     }
 
-    public int getSizeInBytes() {
+    public long getSizeInBytes() {
         return sizeInBytes;
     }
 
-    public void setSizeInBytes(int sizeInBytes) {
+    public void setSizeInBytes(long sizeInBytes) {
         this.sizeInBytes = sizeInBytes;
     }
 
@@ -214,6 +227,27 @@ class CreatedByUser {
     @Override
     public String toString() {
         return "CreatedByUser [id=" + id + ", displayName=" + displayName + "]";
+    }
+}
+
+class Path {
+    private String name;
+
+    public Path() {
+        super();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public String toString() {
+        return "Path [name=" + name + "]";
     }
 }
 
