@@ -34,6 +34,8 @@ import pe.com.domain.acs.api.consumer.model.api.NodeEntry;
 import pe.com.domain.acs.api.consumer.model.api.NodeMoveRequest;
 import pe.com.domain.acs.api.consumer.model.api.NodeVersionEntry;
 import pe.com.domain.acs.api.consumer.model.api.RevertBody;
+import pe.com.domain.acs.api.consumer.model.api.actions.ActionBodyExec;
+import pe.com.domain.acs.api.consumer.model.api.actions.ActionEntry;
 import pe.com.domain.acs.api.consumer.util.Util;
 
 /**
@@ -374,6 +376,41 @@ public class AlfrescoService {
         JsonElement jsonElement = JsonParser.parseString(versionRaw).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
         return new Gson().fromJson(entry, NodeVersionEntry.class);
+    }
+
+    /** Actions **/
+
+    /**
+     * Lista todas las acciónes de Alfresco
+     * @return List<{@link ActionEntry}>
+     * @throws AlfrescoException
+     * @since Alfresco 5.2.2
+     */
+    public List<ActionEntry> listActions() throws AlfrescoException {
+        List<ActionEntry> actions = new ArrayList<>();
+        String actionsRaw = this.alfrescoClient.callGetApi(Endpoint.API_BASE + "/action-definitions");
+        JsonElement jsonElement = JsonParser.parseString(actionsRaw).getAsJsonObject();
+        JsonObject list = jsonElement.getAsJsonObject().getAsJsonObject("list");
+        JsonArray entries = list.getAsJsonArray("entries");
+        for (JsonElement entry : entries) {
+            JsonObject nodeObject = entry.getAsJsonObject().getAsJsonObject("entry");
+            actions.add(new Gson().fromJson(nodeObject, ActionEntry.class));
+        }
+        return actions;
+    }
+
+    /**
+     * Ejecutar una acción de Alfresco
+     * @param actionBodyExec parametros requeridos por la acción, revisar {@link ActionBodyExec}
+     * @return id de la ejecución
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public String executeAction(ActionBodyExec actionBodyExec) throws AlfrescoException {
+        String actionRaw = this.alfrescoClient.callPostApi(Endpoint.API_BASE + "/action-executions", toJson(actionBodyExec), null);
+        JsonElement jsonElement = JsonParser.parseString(actionRaw).getAsJsonObject();
+        JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
+        return entry.get("id").getAsString();
     }
 
     private String encodeValue(String value) {

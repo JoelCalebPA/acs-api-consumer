@@ -96,7 +96,7 @@ public class AlfrescoClient {
             int status = client.executeMethod(mPost);
             response = IOUtils.toString(mPost.getResponseBodyAsStream(), StandardCharsets.UTF_8);
 
-            if (status != HttpStatus.SC_OK && status != HttpStatus.SC_CREATED) {
+            if (status != HttpStatus.SC_OK && status != HttpStatus.SC_CREATED && status != HttpStatus.SC_ACCEPTED) {
                 JsonElement jsonElement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject error = jsonElement.getAsJsonObject().getAsJsonObject("error");
                 AlfrescoApiError alfrescoError = new Gson().fromJson(error, AlfrescoApiError.class);
