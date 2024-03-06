@@ -30,6 +30,10 @@ import pe.com.domain.acs.api.consumer.model.AlfrescoApiError;
 import pe.com.domain.acs.api.consumer.model.AlfrescoException;
 import pe.com.domain.acs.api.consumer.util.Util;
 
+/**
+ * Clase para crear un cliente HTTP que se conecta a un servidor de Alfresco
+ * @author Joel Paytan
+ */
 public class AlfrescoClient {
 
     private static final String JSON_MIME = "application/json";

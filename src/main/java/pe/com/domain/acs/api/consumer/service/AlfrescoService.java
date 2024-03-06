@@ -33,6 +33,10 @@ import pe.com.domain.acs.api.consumer.model.api.NodeEntry;
 import pe.com.domain.acs.api.consumer.model.api.NodeMoveRequest;
 import pe.com.domain.acs.api.consumer.util.Util;
 
+/**
+ * Clase que expone los servicios de las APIs de Alfresco
+ * @author Joel Paytan
+ */
 public class AlfrescoService {
 
     private static final String UTF8 = "UTF-8";
@@ -41,12 +45,23 @@ public class AlfrescoService {
 
     static HttpMethodRetryHandler myretryhandler;
     
+    /**
+     * 
+     * @param host alfresco host (e.g. http://localhost:8080/alfresco)
+     * @param username valid alfresco username
+     * @param password valid alfresco password
+     */
     public AlfrescoService(String host, String username, String password) {
         this.alfrescoClient = new AlfrescoClient(host, username, password);
     }
 
-    /*
-     * Sites APIs
+    /** Sites APIs **/
+
+    /**
+     * Listar todos los sitios de Alfresco.
+     * @return List<{@link AlfrescoSite}>
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
      */
     public List<AlfrescoSite> getSites() throws AlfrescoException {
         List<AlfrescoSite> sites = new ArrayList<>();
@@ -61,6 +76,13 @@ public class AlfrescoService {
         return sites;
     }
 
+    /**
+     * Crear un sitio de Alfresco.
+     * @param site propiedades del sitio, revisar {@link AlfrescoSite} 
+     * @return {@link AlfrescoSite}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public AlfrescoSite createSite(AlfrescoSite site) throws AlfrescoException {
         String siteCreated = this.alfrescoClient.callPostApi(Endpoint.API_SITES, toJson(site), null);
         JsonElement jsonElement = JsonParser.parseString(siteCreated).getAsJsonObject();
@@ -68,15 +90,23 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, AlfrescoSite.class);
     }
 
+    /**
+     * Eliminar un sitio de Alfresco.
+     * @param siteId shortName del sitio
+     * @param permanent si es <b>true</b>, el sitio se elimina permanentemente
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public int deleteSite(String siteId, boolean permanent) throws AlfrescoException {
         return this.alfrescoClient.callDeleteApi(Endpoint.API_SITES + "/" + siteId + "?permanent=" + permanent);
     }
 
     /**
-     * Obtener el documentLibrary de un sitio
+     * Obtener el documentLibrary de un sitio.
      * @param siteId shortName del sitio
-     * @return
+     * @return uuid del documentLibrary
      * @throws AlfrescoException
+     * @since Alfresco 5.2
      */
     public String getDocumentLibrary(String siteId) throws AlfrescoException {
         String siteCreated = this.alfrescoClient
