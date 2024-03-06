@@ -9,10 +9,9 @@ public class Main {
         Authentication auth = new Authentication("http://localhost:8080/alfresco", "admin", "admin");
         AlfrescoService service = new AlfrescoService(auth);
         try {
-            service.listVersionHistory("352587a0-7697-4d13-91a8-f2defbe77110").stream().forEach(version -> {
-                System.out.println(version.toString());
+            service.listActions().stream().forEach(action -> {
+                System.out.println(action.getId() + "\t" + action.getTitle());
             });
-            System.out.println(service.getVersionInfo("352587a0-7697-4d13-91a8-f2defbe77110", "1.1").getName());
         } catch (AlfrescoException e) {
             e.printStackTrace();
         }
