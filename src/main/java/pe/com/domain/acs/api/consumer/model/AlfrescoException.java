@@ -7,7 +7,7 @@ public class AlfrescoException extends Exception {
 	private AlfrescoApiError alfrescoApiError;
 
 	public AlfrescoException(String errorMessage, AlfrescoApiError alfrescoApiError) {
-		super(errorMessage);
+		super(errorMessage + " - " + alfrescoApiError.getBriefSummary());
 		this.alfrescoApiError = alfrescoApiError;
 	}
 

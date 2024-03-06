@@ -71,20 +71,32 @@ public class AlfrescoService {
         return this.alfrescoClient.callDeleteApi(Endpoint.API_SITES + "/" + siteId + "?permanent=" + permanent);
     }
 
-    public AlfrescoSiteContainer getDocumentLibrary(String siteId) throws AlfrescoException {
+    /**
+     * Obtener el documentLibrary de un sitio
+     * @param siteId shortName del sitio
+     * @return
+     * @throws AlfrescoException
+     */
+    public String getDocumentLibrary(String siteId) throws AlfrescoException {
         String siteCreated = this.alfrescoClient
                 .callGetApi(Endpoint.API_SITES + "/" + siteId + "/containers/documentLibrary");
         JsonElement jsonElement = JsonParser.parseString(siteCreated).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
-        return new Gson().fromJson(entry, AlfrescoSiteContainer.class);
+        return new Gson().fromJson(entry, AlfrescoSiteContainer.class).getId();
     }
 
-    /*
-     * Node APIs
-     */
+    /** Node APIs **/
 
-    public NodeEntry getNode(String nodeId, String relativePath)
-            throws AlfrescoException, UnsupportedEncodingException {
+    /**
+     * Obtener información de un nodo en base a su uuid.
+     * @param nodeId uuid del nodo
+     * @param relativePath ruta relativa partiendo desde el nodeId (opcional)
+     * @return {@link NodeEntry}
+     * @throws AlfrescoException
+     * @throws UnsupportedEncodingException
+     * @since Alfresco 5.2
+     */
+    public NodeEntry getNode(String nodeId, String relativePath) throws AlfrescoException {
         String node = "";
         if (Util.isBlank(relativePath))
             node = this.alfrescoClient.callGetApi(Endpoint.API_NODES + "/" + nodeId + "?include=path");
@@ -96,6 +108,16 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, NodeEntry.class);
     }
 
+    /**
+     * Crear un nodo con o sin contenido.
+     * @param parentId uuid del nodo padre donde se creará el nuevo nodo
+     * @param nodeCreate propiedades del nodo a crear, revisar {@link NodeCreate}
+     * @param file archivo a cargar (opcional)
+     * @return {@link NodeEntry}
+     * @throws AlfrescoException
+     * @throws IOException
+     * @since Alfresco 5.2
+     */
     public NodeEntry createNode(String parentId, NodeCreate nodeCreate, File file)
             throws AlfrescoException, IOException {
         Part[] parts;
@@ -138,6 +160,14 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, NodeEntry.class);
     }
 
+    /**
+     * Actualizar propiedades de un nodo.
+     * @param nodeId uuid del nodo
+     * @param nodeCreate propiedades a actualizar del nodo
+     * @return {@link NodeEntry}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public NodeEntry updateNode(String nodeId, NodeCreate nodeCreate) throws AlfrescoException {
         String nodeUpdated = this.alfrescoClient.callPutApi(Endpoint.API_NODES + "/" + nodeId, toJson(nodeCreate),
                 null);
@@ -146,18 +176,24 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, NodeEntry.class);
     }
 
-    public List<NodeEntry> getNodeChildren(String nodeId, String relativePath, int skipCount, int maxItems)
-            throws AlfrescoException, UnsupportedEncodingException {
+    /**
+     * Obtener la lista de nodos hijos de una carpeta (limitado a 10000 resultados).
+     * @param nodeId uuid de la carpeta
+     * @param relativePath ruta relativa partiendo desde el {@link nodeId} (opcional)
+     * @return List<{@link NodeEntry}>
+     * @throws AlfrescoException
+     * @throws UnsupportedEncodingException
+     * @since Alfresco 5.2
+     */
+    public List<NodeEntry> getNodeChildren(String nodeId, String relativePath) throws AlfrescoException, UnsupportedEncodingException {
         List<NodeEntry> nodes = new ArrayList<>();
         String nodesRaw = "";
         if (Util.isBlank(relativePath))
             nodesRaw = this.alfrescoClient
-                    .callGetApi(Endpoint.API_NODES + "/" + nodeId + "/children?skipCount=" + skipCount + "&maxItems="
-                            + maxItems + "&include=path");
+                    .callGetApi(Endpoint.API_NODES + "/" + nodeId + "/children?skipCount=0&maxItems=10000&include=path");
         else
             nodesRaw = this.alfrescoClient
-                    .callGetApi(Endpoint.API_NODES + "/" + nodeId + "/children?skipCount=" + skipCount + "&maxItems="
-                            + maxItems + "&include=path&relativePath=" + encodeValue(relativePath));
+                    .callGetApi(Endpoint.API_NODES + "/" + nodeId + "/children?skipCount=0&maxItems=10000&include=path&relativePath=" + encodeValue(relativePath));
         JsonElement jsonElement = JsonParser.parseString(nodesRaw).getAsJsonObject();
         JsonObject list = jsonElement.getAsJsonObject().getAsJsonObject("list");
         JsonArray entries = list.getAsJsonArray("entries");
@@ -168,10 +204,25 @@ public class AlfrescoService {
         return nodes;
     }
 
+    /**
+     * Eliminación de un nodo.
+     * @param nodeId uuid del nodo a eliminar
+     * @param permanent si es <b>true</b>, el nodo se elimina permanentemente
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public int deleteNode(String nodeId, boolean permanent) throws AlfrescoException {
         return this.alfrescoClient.callDeleteApi(Endpoint.API_NODES + "/" + nodeId + "?permanent=" + permanent);
     }
 
+    /**
+     * Mover un nodo de una carpeta a otra.
+     * @param nodeId uuid del nodo a mover
+     * @param parentId uuid de la nueva carpeta padre
+     * @return {@link NodeEntry}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public NodeEntry moveNode(String nodeId, String parentId) throws AlfrescoException {
         NodeMoveRequest toMove = new NodeMoveRequest(parentId);
         String nodeMoved = this.alfrescoClient.callPostApi(Endpoint.API_NODES + "/" + nodeId + "/move?include=path",
@@ -181,6 +232,15 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, NodeEntry.class);
     }
 
+    /**
+     * Crear una asociación entre un nodo padre y un nodo hijo.
+     * @param nodeId uuid del nodo padre
+     * @param childId uuid del nodo hijo
+     * @param assocType tipo de asociación
+     * @return {@link ChildAssociation}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
     public ChildAssociation createChildAssociation(String nodeId, String childId, String assocType)
             throws AlfrescoException {
         ChildAssociation assoc = new ChildAssociation(childId, assocType);
@@ -191,8 +251,14 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, ChildAssociation.class);
     }
 
-    private String encodeValue(String value) throws UnsupportedEncodingException {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+    private String encodeValue(String value) {
+        String encodedValue = "";
+        try {
+            encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return encodedValue;
     }
 
     private String toJson(Object jsonObject) {

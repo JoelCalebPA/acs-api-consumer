@@ -55,12 +55,12 @@ public class AlfrescoClient {
 
             int status = client.executeMethod(mGet);
             response = IOUtils.toString(mGet.getResponseBodyAsStream(), StandardCharsets.UTF_8);
-            
+
             if (status != HttpStatus.SC_OK) {
                 JsonElement jsonElement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject error = jsonElement.getAsJsonObject().getAsJsonObject("error");
                 AlfrescoApiError alfrescoError = new Gson().fromJson(error, AlfrescoApiError.class);
-                throw new AlfrescoException("Ocurrio un error al llamar al servicio: " + serviceURI, alfrescoError);
+                throw new AlfrescoException("API call failed: " + serviceURI, alfrescoError);
             }
         } catch (HttpException e) {
             e.printStackTrace();
@@ -95,7 +95,7 @@ public class AlfrescoClient {
                 JsonElement jsonElement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject error = jsonElement.getAsJsonObject().getAsJsonObject("error");
                 AlfrescoApiError alfrescoError = new Gson().fromJson(error, AlfrescoApiError.class);
-                throw new AlfrescoException("Ocurrio un error al llamar al servicio: " + serviceURI, alfrescoError);
+                throw new AlfrescoException("API call failed: " + serviceURI, alfrescoError);
             }
         } catch (HttpException e) {
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class AlfrescoClient {
                 JsonElement jsonElement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject error = jsonElement.getAsJsonObject().getAsJsonObject("error");
                 AlfrescoApiError alfrescoError = new Gson().fromJson(error, AlfrescoApiError.class);
-                throw new AlfrescoException("Ocurrio un error al llamar al servicio: " + serviceURI, alfrescoError);
+                throw new AlfrescoException("API call failed: " + serviceURI, alfrescoError);
             }
         } catch (HttpException e) {
             e.printStackTrace();
@@ -157,7 +157,7 @@ public class AlfrescoClient {
                 JsonElement jsonElement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject error = jsonElement.getAsJsonObject().getAsJsonObject("error");
                 AlfrescoApiError alfrescoError = new Gson().fromJson(error, AlfrescoApiError.class);
-                throw new AlfrescoException("Ocurrio un error al llamar al servicio: " + serviceURI, alfrescoError);
+                throw new AlfrescoException("API call failed: " + serviceURI, alfrescoError);
             }
         } catch (HttpException e) {
             e.printStackTrace();

@@ -4,6 +4,7 @@ public class AlfrescoApiError {
 
     private String errorKey;
     private int statusCode;
+    private String briefSummary;
 
     public AlfrescoApiError() {
         super();
@@ -25,9 +26,17 @@ public class AlfrescoApiError {
         this.statusCode = statusCode;
     }
 
+    public String getBriefSummary() {
+        return briefSummary;
+    }
+
+    public void setBriefSummary(String briefSummary) {
+        this.briefSummary = briefSummary;
+    }
+
     @Override
     public String toString() {
-        return "AlfrescoApiError [errorKey=" + errorKey + ", statusCode=" + statusCode + "]";
+        return "AlfrescoApiError [errorKey=" + errorKey + ", statusCode=" + statusCode + ", briefSummary=" + briefSummary + "]";
     }
 
 }
