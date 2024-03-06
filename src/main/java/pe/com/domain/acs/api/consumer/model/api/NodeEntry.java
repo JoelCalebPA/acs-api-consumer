@@ -1,4 +1,4 @@
-package pe.com.domain.bean.api;
+package pe.com.domain.acs.api.consumer.model.api;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -128,11 +128,11 @@ public class NodeEntry {
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
-    
+
     public long getSizeInBytes() {
         return this.content.getSizeInBytes();
     }
-    
+
     public String getPath() {
         return path.getName();
     }
@@ -244,7 +244,7 @@ class Path {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Override
     public String toString() {
         return "Path [name=" + name + "]";

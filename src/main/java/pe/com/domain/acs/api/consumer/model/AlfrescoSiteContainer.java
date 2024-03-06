@@ -1,4 +1,4 @@
-package pe.com.domain.bean;
+package pe.com.domain.acs.api.consumer.model;
 
 public class AlfrescoSiteContainer {
 
