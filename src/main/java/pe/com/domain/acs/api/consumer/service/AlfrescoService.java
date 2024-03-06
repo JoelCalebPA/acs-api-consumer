@@ -2,6 +2,7 @@ package pe.com.domain.acs.api.consumer.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -109,6 +110,19 @@ public class AlfrescoService {
     }
 
     /**
+     * Descargar contenido de un nodo
+     * @param nodeId uuid del nodo a descargar
+     * @return {@link InputStream}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public InputStream getNodeContent(String nodeId) throws AlfrescoException {
+        InputStream content = null;
+        content = this.alfrescoClient.getContent(Endpoint.API_NODES + "/" + nodeId + "/content");
+        return content;
+    }
+
+    /**
      * Crear un nodo con o sin contenido.
      * @param parentId uuid del nodo padre donde se creará el nuevo nodo
      * @param nodeCreate propiedades del nodo a crear, revisar {@link NodeCreate}
@@ -185,7 +199,7 @@ public class AlfrescoService {
      * @throws UnsupportedEncodingException
      * @since Alfresco 5.2
      */
-    public List<NodeEntry> getNodeChildren(String nodeId, String relativePath) throws AlfrescoException, UnsupportedEncodingException {
+    public List<NodeEntry> getNodeChildren(String nodeId, String relativePath) throws AlfrescoException {
         List<NodeEntry> nodes = new ArrayList<>();
         String nodesRaw = "";
         if (Util.isBlank(relativePath))
