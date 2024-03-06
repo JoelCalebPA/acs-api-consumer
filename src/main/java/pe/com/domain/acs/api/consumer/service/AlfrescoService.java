@@ -26,11 +26,14 @@ import com.google.gson.JsonParser;
 import pe.com.domain.acs.api.consumer.model.AlfrescoException;
 import pe.com.domain.acs.api.consumer.model.AlfrescoSite;
 import pe.com.domain.acs.api.consumer.model.AlfrescoSiteContainer;
+import pe.com.domain.acs.api.consumer.model.Authentication;
 import pe.com.domain.acs.api.consumer.model.api.ChildAssociation;
 import pe.com.domain.acs.api.consumer.model.api.Endpoint;
 import pe.com.domain.acs.api.consumer.model.api.NodeCreate;
 import pe.com.domain.acs.api.consumer.model.api.NodeEntry;
 import pe.com.domain.acs.api.consumer.model.api.NodeMoveRequest;
+import pe.com.domain.acs.api.consumer.model.api.NodeVersionEntry;
+import pe.com.domain.acs.api.consumer.model.api.RevertBody;
 import pe.com.domain.acs.api.consumer.util.Util;
 
 /**
@@ -51,11 +54,11 @@ public class AlfrescoService {
      * @param username valid alfresco username
      * @param password valid alfresco password
      */
-    public AlfrescoService(String host, String username, String password) {
-        this.alfrescoClient = new AlfrescoClient(host, username, password);
+    public AlfrescoService(Authentication auth) {
+        this.alfrescoClient = new AlfrescoClient(auth);
     }
 
-    /** Sites APIs **/
+    /** Sites **/
 
     /**
      * Listar todos los sitios de Alfresco.
@@ -116,7 +119,7 @@ public class AlfrescoService {
         return new Gson().fromJson(entry, AlfrescoSiteContainer.class).getId();
     }
 
-    /** Node APIs **/
+    /** Nodes **/
 
     /**
      * Obtener información de un nodo en base a su uuid.
@@ -293,6 +296,84 @@ public class AlfrescoService {
         JsonElement jsonElement = JsonParser.parseString(nodeMoved).getAsJsonObject();
         JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
         return new Gson().fromJson(entry, ChildAssociation.class);
+    }
+
+    /** Versions **/
+
+    /**
+     * Listar las versiones de un nodo
+     * @param nodeId uuid del nodo
+     * @return List<{@link NodeVersionEntry}>
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public List<NodeVersionEntry> listVersionHistory(String nodeId) throws AlfrescoException {
+        List<NodeVersionEntry> history = new ArrayList<>();
+        String historyRaw = this.alfrescoClient.callGetApi(Endpoint.API_NODES + "/" + nodeId + "/versions");
+        JsonElement jsonElement = JsonParser.parseString(historyRaw).getAsJsonObject();
+        JsonObject list = jsonElement.getAsJsonObject().getAsJsonObject("list");
+        JsonArray entries = list.getAsJsonArray("entries");
+        for (JsonElement entry : entries) {
+            JsonObject nodeObject = entry.getAsJsonObject().getAsJsonObject("entry");
+            history.add(new Gson().fromJson(nodeObject, NodeVersionEntry.class));
+        }
+        return history;
+    }
+
+    /**
+     * Obtener información de una versión del nodo
+     * @param nodeId uuid del nodo
+     * @param versionId id de la versión
+     * @return {@link NodeVersionEntry}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public NodeVersionEntry getVersionInfo(String nodeId, String versionId) throws AlfrescoException {
+        String nodeRaw = this.alfrescoClient.callGetApi(Endpoint.API_NODES + "/" + nodeId + "/versions/" + versionId);
+        JsonElement jsonElement = JsonParser.parseString(nodeRaw).getAsJsonObject();
+        JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
+        return new Gson().fromJson(entry, NodeVersionEntry.class);
+    }
+
+    /**
+     * Descargar una versión en especifica del nodo
+     * @param nodeId uuid del nodo
+     * @param versionId id de la versión
+     * @return {@link InputStream}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public InputStream getVersionContent(String nodeId, String versionId) throws AlfrescoException {
+        InputStream content = null;
+        content = this.alfrescoClient.getContent(Endpoint.API_NODES + "/" + nodeId + "/versions/" + versionId + "/content");
+        return content;
+    }
+
+    /**
+     * Elimina una versión en especifica del nodo
+     * @param nodeId uuid del nodo
+     * @param versionId id de la versión
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public int deleteVersion(String nodeId, String versionId) throws AlfrescoException {
+        return this.alfrescoClient.callDeleteApi(Endpoint.API_NODES + "/" + nodeId + "/versions/" + versionId);
+    }
+
+    /**
+     * Revertir a una versión en especifica del nodo
+     * @param nodeId uuid del nodo
+     * @param versionId id de la versión
+     * @param revertBody propiedades de la nueva versión, revisar {@link RevertBody}
+     * @return {@link NodeVersionEntry}
+     * @throws AlfrescoException
+     * @since Alfresco 5.2
+     */
+    public NodeVersionEntry revertVersion(String nodeId, String versionId, RevertBody revertBody) throws AlfrescoException {
+        String versionRaw = this.alfrescoClient.callPostApi(Endpoint.API_NODES + "/" + nodeId + "/versions/" + versionId + "/revert", toJson(revertBody), null);
+        JsonElement jsonElement = JsonParser.parseString(versionRaw).getAsJsonObject();
+        JsonObject entry = jsonElement.getAsJsonObject().getAsJsonObject("entry");
+        return new Gson().fromJson(entry, NodeVersionEntry.class);
     }
 
     private String encodeValue(String value) {

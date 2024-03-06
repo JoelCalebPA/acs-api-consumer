@@ -28,6 +28,7 @@ import com.google.gson.JsonParser;
 
 import pe.com.domain.acs.api.consumer.model.AlfrescoApiError;
 import pe.com.domain.acs.api.consumer.model.AlfrescoException;
+import pe.com.domain.acs.api.consumer.model.Authentication;
 import pe.com.domain.acs.api.consumer.util.Util;
 
 /**
@@ -43,9 +44,9 @@ public class AlfrescoClient {
     private String host;
     private String basicAuth;
 
-    public AlfrescoClient(String host, String username, String password) {
-        this.host = host;
-        this.basicAuth = getBasicAuth(username, password);
+    public AlfrescoClient(Authentication auth) {
+        this.host = auth.getHost();
+        this.basicAuth = getBasicAuth(auth.getUsername(), auth.getPassword());
     }
 
     public String callGetApi(String serviceURI) throws AlfrescoException {
